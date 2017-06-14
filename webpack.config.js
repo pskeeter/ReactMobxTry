@@ -1,29 +1,35 @@
 var path = require('path');
+var webpack = require('webpack');
+var NODE_MODULES_PATH = path.resolve(__dirname, 'node_modules');
 
 module.exports = {
-  entry: path.resolve(__dirname, './spa/index.js'),
+  devtool: 'eval',
+  entry: [
+    'webpack-hot-middleware/client?reload=true',
+    './src/client'
+  ],
   output: {
-    path: path.resolve(__dirname, './public/build'),
-    chunkFilename: '[name].chunk.js',
+    path: path.join(__dirname, 'dist'),
     filename: 'bundle.js',
-    publicPath: '/build/'
-    // publicPath: 'http://192.168.191.1:3000/build/'
+    publicPath: '/static/'
+  },
+  plugins: [
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NoEmitOnErrorsPlugin(),
+    new webpack.DefinePlugin({
+      'process.env': { NODE_ENV: JSON.stringify(process.env.NODE_ENV) },
+      __CLIENT__: JSON.stringify(true),
+      __SERVER__: JSON.stringify(false),
+    }),
+  ],
+  resolve: {
+    extensions: ['.js', '.jsx']
   },
   module: {
-        loaders: [
-            {
-                test: /\.js?$/,
-                exclude: /(node_modules|bower_components)/,
-                loader: 'babel-loader', // 'babel-loader' is also a legal name to reference
-                query: {
-                    "presets": ['es2015','react',"stage-1"],
-                    "plugins": ["transform-decorators-legacy"]
-                }
-            },
-            {test: /\.scss$/, loaders: ["style-loader", "css-loader?sourceMap", "sass-loader?sourceMap"]},
-            {test: /\.css$/, loader: 'style-loader!css-loader'},
-            {test: /\.(png|jpg)$/, loader: 'url-loader?limit=8192'},
-            {test: /\.(eot|woff|svg|ttf)$/, loader: "file-loader" }
-        ]
-    }
+    loaders: [{
+      test: /\.jsx?$/,
+      loaders: ['babel-loader'],
+      exclude: NODE_MODULES_PATH,
+    }]
+  }
 };
